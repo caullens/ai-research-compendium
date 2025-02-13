@@ -8,7 +8,7 @@ In the following sections, you'll discover:
 
 This compendium is just a snapshot of the vast AI research landscape, focusing on a few monumental papers that have had a major impact. Looking ahead, innovations such as extended inference-time reasoning, integrated surprise signals, and robust self-play suggest a future where AI becomes even more adaptive and powerful. The journey of AI is far from over, and these works offer both a historical record and a springboard for speculating on the incredible possibilities that lie ahead.
 
-#### For an audio overview [checkout this Notebook LM episode](https://notebooklm.google.com/notebook/c3bc2e78-299e-46e8-9d09-b31bbdf72727/audio). *Note: This audio experience is separate from the written overview, and some details from each paper may differ between the two formats. I recommend exploring not only this write-up summary and the audio overview, but diving into the original research papers we well for a more comprehensive understanding.*
+#### For an audio overview [checkout this Notebook LM episode](https://notebooklm.google.com/notebook/c3bc2e78-299e-46e8-9d09-b31bbdf72727/audio). *Note: This audio experience is separate from the written overview, and some details from each paper may differ between the two formats. I recommend exploring not only this write-up summary and the audio overview, but diving into the original research papers as well for a more comprehensive understanding.*
 
 ---
 
