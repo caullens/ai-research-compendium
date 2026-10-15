@@ -1,8 +1,114 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Block Universe Microscope</title>
 <style>
-:root{color-scheme:dark;--bg:#090b0f;--p:#131820;--p2:#0d1117;--line:#2a3442;--txt:#eef3fa;--muted:#8d99aa}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,sans-serif}header{padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#090b0fee;backdrop-filter:blur(10px);z-index:3}h1{font-size:18px;margin:0 0 3px}.sub,.note{color:var(--muted);font-size:12px;line-height:1.4}main{max-width:1250px;margin:auto;padding:12px;display:grid;grid-template-columns
+:root{color-scheme:dark;--bg:#0b0e13;--panel:#151a22;--line:#2c3542;--text:#edf2f8;--muted:#98a4b3}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,14,19,.95);backdrop-filter:blur(8px);z-index:4}
+h1{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted)}
+main{max-width:1200px;margin:auto;padding:12px;display:grid;grid-template-columns:300px 1fr;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}.controls{position:sticky;top:72px;align-self:start}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.control{margin:8px 0}label{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}
+button,select{width:100%;padding:9px;border-radius:9px;border:1px solid var(--line);background:#0e131a;color:var(--text)}
+.slider{display:grid;grid-template-columns:24px 1fr 52px;gap:7px;align-items:center;margin:8px 0}.slider span,.slider output{font-size:12px;color:var(--muted)}.slider output{text-align:right;font-variant-numeric:tabular-nums}input[type=range]{width:100%}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px}.canvasBox{background:#05070a;border:1px solid var(--line);border-radius:12px;padding:7px}canvas{display:block;width:100%;height:auto;border-radius:8px;touch-action:none}.facts{display:grid;grid-template-columns:1fr auto;gap:7px 10px;font-size:12px;margin-top:10px}.facts div:nth-child(odd){color:var(--muted)}.legend{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:5px}.note{font-size:12px;color:var(--muted);line-height:1.4;margin-top:10px}.status{font-size:12px;color:#b8c4d3;margin-top:8px}
+@media(max-width:850px){main{grid-template-columns:1fr}.controls{position:static}.stage{grid-template-columns:1fr}.panel{padding:10px}}
+</style>
+</head>
+<body>
+<header><h1>Block Universe Microscope</h1><div class="sub">Continuous frozen neural block universe · R⁴ → R⁸ · no training, no update loop</div></header>
+<main>
+<section class="panel controls">
+  <div class="row">
+    <div class="control"><label>Input chart</label><button id="inputMode">Original</button></div>
+    <div class="control"><label>Output basis</label><button id="outputMode">Original</button></div>
+  </div>
+  <div class="row">
+    <div class="control"><label>Slice axis A</label><select id="axisA"></select></div>
+    <div class="control"><label>Slice axis B</label><select id="axisB"></select></div>
+  </div>
+  <div class="control"><label>Displayed field</label><select id="field"></select></div>
+  <div id="sliders"></div>
+  <div class="row">
+    <button id="randomize">Random point</button><button id="play">Play time scan</button>
+  </div>
+  <div class="status" id="status">Initializing…</div>
+  <div class="note">Drag directly on the heatmap. Rotating the chart or output basis changes our description, not the frozen universe itself.</div>
+</section>
+<section>
+  <div class="stage">
+    <div class="panel">
+      <div class="canvasBox"><canvas id="slice" width="600" height="600"></canvas></div>
+      <div class="legend"><span id="minV"></span><span>drag to probe continuously</span><span id="maxV"></span></div>
+    </div>
+    <div class="panel">
+      <label>Local anonymous state</label><div class="canvasBox"><canvas id="state" width="300" height="220"></canvas></div>
+      <div class="facts"><div>State norm</div><div id="stateNorm"></div><div>Local rank</div><div id="rank"></div><div>Max sensitivity</div><div id="smax"></div><div>Min sensitivity</div><div id="smin"></div></div>
+      <label style="margin-top:12px">Jacobian singular spectrum</label><div class="canvasBox"><canvas id="sv" width="300" height="150"></canvas></div>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:12px"><label>Worldline scan along coordinate 0</label><div class="canvasBox"><canvas id="path" width="900" height="220"></canvas></div></div>
+</section>
+</main>
+<script>
+(function(){
+"use strict";
+const status = document.getElementById("status");
+try {
+  function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+  const rng=mulberry32(20261015);
+  function gaussian(){let u=0,v=0;while(u===0)u=rng();while(v===0)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function makeMatrix(rows,cols,scale){return Array.from({length:rows},()=>Array.from({length:cols},()=>gaussian()*scale));}
+  function makeVector(n,scale){return Array.from({length:n},()=>gaussian()*scale);}
+  const W1=makeMatrix(24,4,.5), B1=makeVector(24,.15);
+  const W2=makeMatrix(24,24,1/Math.sqrt(24)), B2=makeVector(24,.15);
+  const W3=makeMatrix(8,24,1/Math.sqrt(24)), B3=makeVector(8,.15);
+  function layer(W,b,x,nonlinear){return W.map((row,j)=>{let z=b[j];for(let i=0;i<x.length;i++)z+=row[i]*x[i];return nonlinear?Math.tanh(z):z;});}
+  function baseF(x){return layer(W3,B3,layer(W2,B2,layer(W1,B1,x,true),true),false);}
+  function rotatePair(x,i,j,a){const y=x.slice(),c=Math.cos(a),s=Math.sin(a),u=x[i],v=x[j];y[i]=c*u-s*v;y[j]=s*u+c*v;return y;}
+  const inputOps=[[0,1,.61],[2,3,.39],[0,2,-.71],[1,3,.47]];
+  const outputOps=[[0,7,.43],[1,5,-.62],[2,6,.51],[3,4,.77],[0,3,-.35],[5,7,.58]];
+  function rotateByOps(x,ops,inverse){let y=x.slice();const list=inverse?ops.slice().reverse():ops;for(const op of list){y=rotatePair(y,op[0],op[1],(inverse?-1:1)*op[2]);}return y;}
+  let inputRot=false,outputRot=false,coord=[0,0,0,0],axisA=0,axisB=1,field="norm",playing=false,lastTime=0,queued=false;
+  function F(q){const x=inputRot?rotateByOps(q,inputOps,true):q;let y=baseF(x);if(outputRot)y=rotateByOps(y,outputOps,false);return y;}
+  function norm(v){let s=0;for(const x of v)s+=x*x;return Math.sqrt(s);}
+  function scalar(q){const y=F(q);return field==="norm"?norm(y):y[Number(field.slice(1))];}
+  const names=["t","x","y","z"];
+  const aSel=document.getElementById("axisA"),bSel=document.getElementById("axisB"),fieldSel=document.getElementById("field");
+  names.forEach((n,i)=>{aSel.add(new Option(n,i));bSel.add(new Option(n,i));});aSel.value="0";bSel.value="1";
+  fieldSel.add(new Option("state norm","norm"));for(let i=0;i<8;i++)fieldSel.add(new Option("anonymous component "+i,"c"+i));
+  const sliderBox=document.getElementById("sliders");
+  function buildSliders(){sliderBox.innerHTML="";for(let i=0;i<4;i++){const d=document.createElement("div");d.className="slider";d.innerHTML='<span>'+names[i]+'</span><input type="range" min="-3" max="3" step="0.01" value="'+coord[i]+'"><output>'+coord[i].toFixed(2)+'</output>';const r=d.querySelector("input"),o=d.querySelector("output");r.addEventListener("input",()=>{coord[i]=Number(r.value);o.textContent=coord[i].toFixed(2);requestRender();});sliderBox.appendChild(d);}}
+  buildSliders();
+  const slice=document.getElementById("slice"),sctx=slice.getContext("2d"),stateCanvas=document.getElementById("state"),stateCtx=stateCanvas.getContext("2d"),svCanvas=document.getElementById("sv"),svCtx=svCanvas.getContext("2d"),pathCanvas=document.getElementById("path"),pathCtx=pathCanvas.getContext("2d");
+  function colorMap(t){t=Math.max(0,Math.min(1,t));return [Math.round(18+220*t),Math.round(28+205*Math.sqrt(t)),Math.round(45+195*(1-Math.abs(2*t-1)))];}
+  function renderSlice(){const N=84,vals=new Float64Array(N*N);let mn=Infinity,mx=-Infinity;for(let j=0;j<N;j++){for(let i=0;i<N;i++){const q=coord.slice();q[axisA]=-3+6*i/(N-1);q[axisB]=3-6*j/(N-1);const v=scalar(q);vals[j*N+i]=v;if(v<mn)mn=v;if(v>mx)mx=v;}}const img=sctx.createImageData(N,N);for(let k=0;k<vals.length;k++){const rgb=colorMap((vals[k]-mn)/(mx-mn+1e-12)),p=4*k;img.data[p]=rgb[0];img.data[p+1]=rgb[1];img.data[p+2]=rgb[2];img.data[p+3]=255;}const off=document.createElement("canvas");off.width=N;off.height=N;off.getContext("2d").putImageData(img,0,0);sctx.clearRect(0,0,slice.width,slice.height);sctx.imageSmoothingEnabled=true;sctx.drawImage(off,0,0,slice.width,slice.height);const px=(coord[axisA]+3)/6*slice.width,py=(3-coord[axisB])/6*slice.height;sctx.strokeStyle="#fff";sctx.lineWidth=2;sctx.beginPath();sctx.arc(px,py,7,0,2*Math.PI);sctx.stroke();document.getElementById("minV").textContent=mn.toFixed(3);document.getElementById("maxV").textContent=mx.toFixed(3);}
+  function jacobian(q){const eps=1e-3,J=Array.from({length:8},()=>Array(4).fill(0));for(let j=0;j<4;j++){const p=q.slice(),m=q.slice();p[j]+=eps;m[j]-=eps;const fp=F(p),fm=F(m);for(let i=0;i<8;i++)J[i][j]=(fp[i]-fm[i])/(2*eps);}return J;}
+  function eigenSymmetric(A){A=A.map(r=>r.slice());const n=A.length;for(let it=0;it<60;it++){let p=0,q=1,best=0;for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const v=Math.abs(A[i][j]);if(v>best){best=v;p=i;q=j;}}if(best<1e-10)break;const phi=.5*Math.atan2(2*A[p][q],A[q][q]-A[p][p]),c=Math.cos(phi),s=Math.sin(phi);for(let k=0;k<n;k++){if(k===p||k===q)continue;const akp=A[k][p],akq=A[k][q];A[k][p]=A[p][k]=c*akp-s*akq;A[k][q]=A[q][k]=s*akp+c*akq;}const app=A[p][p],aqq=A[q][q],apq=A[p][q];A[p][p]=c*c*app-2*s*c*apq+s*s*aqq;A[q][q]=s*s*app+2*s*c*apq+c*c*aqq;A[p][q]=A[q][p]=0;}return A.map((r,i)=>r[i]);}
+  function singularValues(J){const M=Array.from({length:4},()=>Array(4).fill(0));for(let i=0;i<4;i++)for(let j=0;j<4;j++)for(let k=0;k<8;k++)M[i][j]+=J[k][i]*J[k][j];return eigenSymmetric(M).map(x=>Math.sqrt(Math.max(0,x))).sort((a,b)=>b-a);}
+  function drawBars(ctx,canvas,v,symmetric){ctx.clearRect(0,0,canvas.width,canvas.height);const mx=Math.max(1e-9,...v.map(x=>Math.abs(x))),zero=symmetric?canvas.height/2:canvas.height-18,slot=(canvas.width-24)/v.length;ctx.strokeStyle="#394554";ctx.beginPath();ctx.moveTo(12,zero);ctx.lineTo(canvas.width-12,zero);ctx.stroke();for(let i=0;i<v.length;i++){const h=Math.abs(v[i])/mx*(symmetric?canvas.height*.4:canvas.height-38),x=12+i*slot+2;ctx.fillStyle="#d8e4f4";ctx.fillRect(x,symmetric?(v[i]>=0?zero-h:zero):zero-h,Math.max(2,slot-4),h);}}
+  function renderLocal(){const y=F(coord),sv=singularValues(jacobian(coord));drawBars(stateCtx,stateCanvas,y,true);drawBars(svCtx,svCanvas,sv,false);document.getElementById("stateNorm").textContent=norm(y).toFixed(5);document.getElementById("rank").textContent=sv.filter(x=>x>1e-4).length+" / 4";document.getElementById("smax").textContent=sv[0].toFixed(5);document.getElementById("smin").textContent=sv[sv.length-1].toFixed(5);}
+  function drawLine(ctx,canvas,v,color){let mn=Math.min(...v),mx=Math.max(...v);if(mx===mn)mx=mn+1;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<v.length;i++){const x=18+i/(v.length-1)*(canvas.width-30),y=10+(mx-v[i])/(mx-mn)*(canvas.height-26);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();}
+  function renderPath(){const nVals=[],fVals=[],N=180;pathCtx.clearRect(0,0,pathCanvas.width,pathCanvas.height);for(let i=0;i<N;i++){const q=coord.slice();q[0]=-3+6*i/(N-1);const y=F(q);nVals.push(norm(y));fVals.push(field==="norm"?y[0]:y[Number(field.slice(1))]);}drawLine(pathCtx,pathCanvas,nVals,"#e4edf9");drawLine(pathCtx,pathCanvas,fVals,"#7f8ea2");}
+  function render(){renderSlice();renderLocal();renderPath();status.textContent="Running · chart "+(inputRot?"rotated":"original")+" · state basis "+(outputRot?"rotated":"original");}
+  function requestRender(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;render();});}
+  document.getElementById("inputMode").addEventListener("click",e=>{inputRot=!inputRot;e.currentTarget.textContent=inputRot?"Rotated":"Original";requestRender();});
+  document.getElementById("outputMode").addEventListener("click",e=>{outputRot=!outputRot;e.currentTarget.textContent=outputRot?"Rotated":"Original";requestRender();});
+  aSel.addEventListener("change",()=>{axisA=Number(aSel.value);if(axisA===axisB){axisB=(axisA+1)%4;bSel.value=String(axisB);}requestRender();});
+  bSel.addEventListener("change",()=>{axisB=Number(bSel.value);if(axisA===axisB){axisA=(axisB+1)%4;aSel.value=String(axisA);}requestRender();});
+  fieldSel.addEventListener("change",()=>{field=fieldSel.value;requestRender();});
+  document.getElementById("randomize").addEventListener("click",()=>{coord=coord.map(()=>-2.5+5*Math.random());buildSliders();requestRender();});
+  document.getElementById("play").addEventListener("click",e=>{playing=!playing;e.currentTarget.textContent=playing?"Pause scan":"Play time scan";});
+  let dragging=false;
+  function probe(ev){const r=slice.getBoundingClientRect(),u=(ev.clientX-r.left)/r.width,v=(ev.clientY-r.top)/r.height;coord[axisA]=-3+6*u;coord[axisB]=3-6*v;buildSliders();requestRender();}
+  slice.addEventListener("pointerdown",ev=>{dragging=true;slice.setPointerCapture(ev.pointerId);probe(ev);});slice.addEventListener("pointermove",ev=>{if(dragging)probe(ev);});slice.addEventListener("pointerup",()=>{dragging=false;});slice.addEventListener("pointercancel",()=>{dragging=false;});
+  function animate(ts){if(playing){const dt=Math.min(.05,(ts-lastTime)/1000||0);coord[0]+=dt*.65;if(coord[0]>3)coord[0]=-3;buildSliders();requestRender();}lastTime=ts;requestAnimationFrame(animate);}
+  render();requestAnimationFrame(animate);
+} catch(err) { status.textContent="Error: "+err.message; console.error(err); }
+})();
+</script>
+</body>
+</html>
