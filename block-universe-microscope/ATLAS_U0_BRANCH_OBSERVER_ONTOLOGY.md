@@ -72,7 +72,75 @@ The full 8D observer therefore sees isolated double-point defects, while a 7D ob
 
 For k<4, the stronger phenomenon is local: each observed state already corresponds to a continuous `(4-k)`-dimensional family of nearby source points.
 
-## 4. Nearest distant-state ambiguity
+## 4. The same exact D0 defect inflates under reduced observation
+
+The first full-state double point D0 was used as a fixed ontic landmark. Around the exact source pair `(a,b)`, the local observational equality manifold was solved numerically for the same nested observer family.
+
+The result matches the generic dimension prediction exactly:
+
+- k=8: one isolated exact pair
+- k=7: exact 1D curve
+- k=6: exact 2D surface
+- k=5: exact 3D family
+- k=4: exact 4D family
+
+Hundreds of exact projected-equality samples were constructed at residuals around 1e-13 or better. The sample participation dimension follows `8-k` essentially exactly.
+
+This is stronger than a generic counting argument. It shows the **same underlying ontic defect** continuously changes effective dimensionality solely because the observer loses state channels.
+
+## 5. Observer-induced critical / caustic sets
+
+Projection can create local singularities even though full U₀ remains a regular rank-4 immersion.
+
+A projected critical state satisfies
+
+`rank(P_k J(x)) < 4`.
+
+Equivalently there is a nonzero source direction `v` such that
+
+`P_k J(x) v = 0`.
+
+For a generic `k x 4` projected Jacobian, the rank<=3 locus has codimension `k-3` in matrix space. Since the source itself is 4D, the expected dimension of observer-induced critical states is
+
+`4 - (k-3) = 7-k`.
+
+Exact numerical solves recover this full ladder:
+
+- k=4: 3D caustic hypersurfaces
+- k=5: 2D critical surfaces
+- k=6: 1D critical curves
+- k=7: isolated critical points
+- k=8: generically absent
+
+For the tested nested observer family, exact projected rank-drop points were found abundantly for k=4..7, with projected weakest singular values around machine precision while the full 8D U₀ Jacobian remained regular.
+
+A 30k-point k=8 survey found no source-rank collapse in the sampled region.
+
+Thus lower-dimensional observers acquire **new singular physics created by observation itself**.
+
+## 6. Two independent observer-relative effects
+
+The same fixed U₀ therefore supports two different observer-induced structures:
+
+### Global ambiguity
+
+`dim pair-equality locus = 8-k`
+
+### Local caustics
+
+`dim projected rank-drop locus = 7-k`
+
+These differ by one dimension and arise from different mechanisms.
+
+A k=7 observer is particularly informative:
+
+- locally sees all four dimensions almost everywhere,
+- has isolated caustic points where one local source direction becomes invisible,
+- simultaneously sees 1D curves of distant pair-identifications.
+
+So 'having enough channels to recover local dimension' does **not** imply recovering the global ontology.
+
+## 7. Nearest distant-state ambiguity
 
 On a common 7000-point source sample, the median distance in observed state space to the nearest source-distant state grows sharply with k:
 
@@ -91,20 +159,33 @@ The numerical distances are projection/metric dependent; the robust point is the
 
 The same frozen U₀ does not induce one unique effective ontology for every observer.
 
-A low-channel observer can inhabit a world with continuous hidden fibers; a k=4 observer can recover four local degrees of freedom but still experience extended global self-overlap; a k=7 observer can see defect strings/curves; the full k=8 observer sees isolated double-point defects.
+A low-channel observer can inhabit a world with continuous hidden fibers; a k=4 observer can recover four local degrees of freedom but still experience extended global self-overlap; a k=7 observer sees defect curves plus isolated local caustics; the full k=8 observer sees isolated double-point defects and no generic projected caustics.
 
 This is not merely epistemic uncertainty in the everyday sense. The quotient space available to the observer is genuinely different because the observation map changes which source events are operationally identical.
 
 The key distinction is:
 
 - **ontic U₀:** the fixed full map `F : R^4 -> R^8`
-- **observer-effective world:** the quotient induced by `P_k ∘ F`
+- **observer-effective world:** the quotient induced by `P_k o F`
+
+The current branch therefore gives a precise computational example of
+
+`ontic universe != observer-effective universe`.
+
+Different observers of the exact same underlying reality can have different:
+
+- apparent local dimension,
+- fiber multiplicity,
+- defect dimensionality,
+- critical/caustic sets,
+- global quotient topology.
 
 ## Next targets
 
-1. Parameterize an actual k=7 observational double locus and visualize how an isolated full-state defect expands into a curve under one lost state dimension.
-2. Track the same underlying source region across k=8 -> 7 -> 6 -> 5 -> 4 to build a literal ontology-bifurcation movie.
-3. Replace random linear projections with learned/optimized sensory maps and ask what observation channels best preserve topology or distinguish defects.
-4. Test whether two observers with equal channel count but different projections infer inequivalent effective topology.
-5. Investigate observer fusion: how many independent partial observers are required before their joint observations reconstruct the full-state quotient?
-6. Later connect this to the ontology learner: can it infer hidden dimensions or recognize that apparent 'objects' are projection-induced self-identifications?
+1. Classify the local catastrophe type of the isolated k=7 caustics and generic folds at k=4..6.
+2. Track one exact caustic continuously as the observer subspace is rotated or as k changes.
+3. Compute observer-effective quotient homology/topology on bounded regions instead of only local dimension counts.
+4. Ask whether an observer can infer hidden state dimensions from self-identifications and caustics alone.
+5. Compare many random observers with equal channel count to separate dimension-count universality from projection-specific topology.
+6. Test observer fusion: how many partial observers are required before their joint observation reconstructs the full-state quotient?
+7. Build an interactive observer microscope where the observation subspace can be continuously rotated while apparent defects and caustics are shown changing in real time.
