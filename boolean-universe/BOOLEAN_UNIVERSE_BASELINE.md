@@ -211,6 +211,72 @@ This is the first appearance of genuine temporal concepts:
 
 They were impossible in the purely feed-forward bricks because repeated application had not yet been made part of the universe.
 
+## Brick 7: two recurrent Boolean state bits
+
+The global state is now one of four values `00,01,10,11`. A deterministic autonomous universe is any map from these four states back to the four states, so the complete universe class has
+
+`4^4 = 256`
+
+members.
+
+Every member is exactly a directed functional graph: each state has one outgoing edge. Therefore every connected component consists of an attractor cycle with a possibly empty transient tree feeding into it.
+
+After quotienting by **arbitrary relabeling of the four global states**, the 256 labeled universes collapse to exactly
+
+> **19 unlabeled dynamical shapes.**
+
+This is the first nontrivial state-space topology in the ladder.
+
+### Exact census
+
+Attractor cycle-pattern counts over all 256 labeled universes:
+
+- `(1)`: 64
+- `(1,1)`: 48
+- `(1,1,1)`: 12
+- `(1,1,1,1)`: 1
+- `(1,1,2)`: 6
+- `(1,2)`: 36
+- `(1,3)`: 8
+- `(2)`: 48
+- `(2,2)`: 3
+- `(3)`: 24
+- `(4)`: 6
+
+Longest attractor cycle:
+
+- length 1: 125 universes
+- length 2: 93
+- length 3: 32
+- length 4: 6
+
+Transient depth:
+
+- depth 0: 24
+- depth 1: 124
+- depth 2: 84
+- depth 3: 24
+
+Exactly 24 universes are reversible, matching the `4!` permutations of four states. Reversibility is therefore precisely the condition that every state has indegree one and no transient state exists.
+
+Other exact counts:
+
+- 114 universes have multiple attractors;
+- 232 have at least one transient state;
+- only 24 are pure permutations/reversible dynamics.
+
+### Conceptual threshold
+
+One recurrent bit gave only fixed points, one-bit memory, and a 2-cycle. Two recurrent bits are the first place where we get:
+
+- competing attractors and basins;
+- transient histories of different lengths;
+- 3- and 4-cycle clocks;
+- reversible versus irreversible universes;
+- a nontrivial unlabeled topology of state transition.
+
+Importantly, none of this required geometry. The first “shape” in the Boolean program is **graph-theoretic dynamical shape**, emerging solely from recurrence and multiple distinguishable states.
+
 ## Current ground-up picture
 
 The ladder now separates several ideas that were entangled in the large neural universes:
@@ -222,18 +288,25 @@ The ladder now separates several ideas that were entangled in the large neural u
 5. **relation** — laws that genuinely depend on more than one external variable;
 6. **partition / equivalence class** — hidden representation as grouping of situations;
 7. **expressive freedom** — each retained hidden distinction doubles possible downstream binary labelings;
-8. **time** — recurrence creates attractors, memory and oscillation from the same tiny Boolean function class.
+8. **time** — recurrence creates attractors, memory and oscillation;
+9. **dynamical topology** — with two recurrent bits, cycles and transient trees become a genuine unlabeled structure;
+10. **reversibility** — emerges exactly as bijective state evolution.
 
 Nothing geometric or physical has been assumed or claimed yet.
 
-## Natural next brick
+## Recommended Brick 8
 
-The smallest next temporal system is **two recurrent Boolean state bits with no input**. It has four global states and `4^4 = 256` deterministic update maps. This is still completely exhaustible, but it is the first universe capable of:
+The smallest next change is to add **one external Boolean input/action to one recurrent Boolean state bit**:
 
-- fixed points plus multiple basins;
-- 2-, 3-, and 4-cycles;
-- transient trees feeding cycles;
-- permutations/reversible dynamics;
-- genuinely nontrivial finite state-space topology.
+`s_(t+1) = F(s_t, a_t)`.
 
-That is the recommended Brick 7.
+There are only 16 update laws, still exhaustively enumerable. This is the first controlled dynamical universe and introduces the distinction between:
+
+- autonomous state;
+- external intervention/action;
+- controllability;
+- state-setting/resetting;
+- toggling;
+- action-independent memory.
+
+That is the cleanest next brick before combining controlled input with the richer two-bit recurrent state.
